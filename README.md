@@ -16,6 +16,10 @@ A Explosion API é o backend do e-commerce Explosion, oferecendo endpoints para 
 - ✅ Listagem de clientes atacadistas
 - ✅ Busca de clientes por ID
 - ✅ Relacionamentos de dados (energéticos, marcas, volumes, preços)
+- ✅ **Sistema de autenticação completo**
+  - 🔐 Registro de novos usuários
+  - 🔑 Login com JWT
+  - 🔒 Hash de senhas com bcrypt
 - ✅ Tratamento de erros centralizado
 - ✅ Suporte a CORS
 - ✅ Estrutura MVC organizada
@@ -25,6 +29,8 @@ A Explosion API é o backend do e-commerce Explosion, oferecendo endpoints para 
 - **[Node.js](https://nodejs.org/)** - Runtime JavaScript
 - **[Express.js](https://expressjs.com/) v5** - Framework web
 - **[Supabase](https://supabase.com/)** - Backend as a Service (BaaS)
+- **[JWT](https://jwt.io/)** - JSON Web Tokens para autenticação
+- **[bcryptjs](https://www.npmjs.com/package/bcryptjs)** - Hash de senhas
 - **[Cors](https://www.npmjs.com/package/cors)** - Middleware de CORS
 - **[Dotenv](https://www.npmjs.com/package/dotenv)** - Gerenciamento de variáveis de ambiente
 - **[Nodemon](https://nodemon.io/)** - Hot reload em desenvolvimento
@@ -87,6 +93,8 @@ Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
 | `PORT` | Porta do servidor | `3000` |
 | `SUPABASE_URL` | URL do projeto Supabase | `https://xxxxx.supabase.co` |
 | `SUPABASE_KEY` | Chave anon/public do Supabase | `eyJhbGc...` |
+| `JWT_SECRET` | Chave secreta para assinar tokens JWT | `sua_chave_secreta_forte_aqui` |
+| `JWT_EXPIRES_IN` | Tempo de expiração do token | `1d` (1 dia), `7d`, `24h` |
 | `NODE_ENV` | Ambiente de execução | `development` ou `production` |
 
 ### Como obter as credenciais do Supabase
@@ -103,6 +111,8 @@ Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
 PORT=3000
 SUPABASE_URL=https://seu-projeto.supabase.co
 SUPABASE_KEY=sua_chave_anon_aqui
+JWT_SECRET=sua_chave_secreta_forte_aqui
+JWT_EXPIRES_IN=1d
 NODE_ENV=development
 ```
 
@@ -114,11 +124,13 @@ explosion-api/
 │   ├── config/
 │   │   └── supabase.js          # Configuração do cliente Supabase
 │   ├── controllers/
+│   │   ├── auth.controller.js       # Lógica de negócio - Autenticação
 │   │   ├── clientes.controller.js   # Lógica de negócio - Clientes
 │   │   └── produtos.controller.js   # Lógica de negócio - Produtos
 │   ├── middlewares/
 │   │   └── errorHandler.js      # Middleware de tratamento de erros
 │   ├── routes/
+│   │   ├── auth.routes.js       # Rotas de autenticação
 │   │   ├── clientes.routes.js   # Rotas de clientes
 │   │   └── produtos.routes.js   # Rotas de produtos
 │   ├── utils/
@@ -334,6 +346,128 @@ curl http://localhost:3000/api/v1/clientes/1
 {
   "success": false,
   "message": "Cliente não encontrado"
+}
+```
+
+---
+
+### Autenticação
+
+#### Registrar novo usuário
+
+```http
+POST /api/v1/auth/register
+```
+
+Cria um novo usuário no sistema.
+
+**Body (JSON):**
+```json
+{
+  "nome": "João Silva",
+  "email": "joao@example.com",
+  "senha": "senha_forte_123"
+}
+```
+
+**Exemplo de requisição:**
+```bash
+curl -X POST http://localhost:3000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "João Silva",
+    "email": "joao@example.com",
+    "senha": "senha_forte_123"
+  }'
+```
+
+**Resposta de Sucesso (201):**
+```json
+{
+  "success": true,
+  "message": "Usuário cadastrado com sucesso",
+  "data": [
+    {
+      "id_usuario": 1,
+      "nome": "João Silva",
+      "email": "joao@example.com",
+      "criado_em": "2026-05-22T10:30:00.000Z"
+    }
+  ]
+}
+```
+
+**Erro (409 - Email já existe):**
+```json
+{
+  "success": false,
+  "message": "Email já cadastrado"
+}
+```
+
+**Erro (400 - Campos obrigatórios):**
+```json
+{
+  "success": false,
+  "message": "Nome, email e senha são obrigatórios"
+}
+```
+
+#### Login de usuário
+
+```http
+POST /api/v1/auth/login
+```
+
+Autentica um usuário e retorna um token JWT.
+
+**Body (JSON):**
+```json
+{
+  "email": "joao@example.com",
+  "senha": "senha_forte_123"
+}
+```
+
+**Exemplo de requisição:**
+```bash
+curl -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "joao@example.com",
+    "senha": "senha_forte_123"
+  }'
+```
+
+**Resposta de Sucesso (200):**
+```json
+{
+  "success": true,
+  "message": "Login realizado com sucesso",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "usuario": {
+      "id_usuario": 1,
+      "nome": "João Silva",
+      "email": "joao@example.com"
+    }
+  }
+}
+```
+
+**Erro (401 - Credenciais inválidas):**
+```json
+{
+  "success": false,
+  "message": "Email ou senha inválidos"
+}
+```
+
+**Erro (400 - Campos obrigatórios):**
+```json
+{
+  "success": false,
+  "message": "Email e senha são obrigatórios"
 }
 ```
 

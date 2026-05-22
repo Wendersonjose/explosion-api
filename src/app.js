@@ -6,6 +6,7 @@ const cors = require('cors')
 
 const clientesRoutes = require('./routes/clientes.routes')
 const produtosRoutes = require('./routes/produtos.routes')
+const authRoutes = require('./routes/auth.routes')
 const errorHandler = require('./middlewares/errorHandler')
 
 const app = express()
@@ -24,6 +25,7 @@ app.get('/', (req, res) => {
 // Rotas da API
 app.use('/api/v1/clientes', clientesRoutes)
 app.use('/api/v1/produtos', produtosRoutes)
+app.use('/api/v1/auth', authRoutes)
 
 // Middleware de tratamento de erros (deve ser o último)
 app.use(errorHandler)
