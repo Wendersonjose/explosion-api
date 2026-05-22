@@ -1,17 +1,21 @@
 # 🚀 Explosion API
 
-API REST desenvolvida para gerenciamento de produtos energéticos e clientes atacadistas, construída com Node.js, Express e Supabase.
+> **⚠️ Projeto em Desenvolvimento** - Esta é uma versão inicial da API. Novas funcionalidades estão sendo implementadas.
+
+API REST para e-commerce Explosion, especializado em produtos energéticos. Construída com Node.js, Express e Supabase/PostgreSQL.
 
 ## 📋 Sobre o Projeto
 
-A Explosion API é uma solução backend robusta que oferece endpoints para consulta de produtos energéticos e gestão de clientes atacadistas. A API utiliza Supabase como banco de dados, oferecendo consultas otimizadas com relacionamentos complexos entre tabelas.
+A Explosion API é o backend do e-commerce Explosion, oferecendo endpoints para consulta de produtos energéticos e gestão de clientes atacadistas. A API utiliza Supabase (PostgreSQL) como banco de dados, com consultas otimizadas e relacionamentos entre tabelas.
 
-### ✨ Funcionalidades
+### ✨ Funcionalidades Implementadas
 
-- ✅ Listagem e busca de produtos energéticos
-- ✅ Filtros avançados (busca por nome e marca)
-- ✅ Gestão de clientes atacadistas
-- ✅ Relacionamentos complexos (energéticos, marcas, volumes, preços)
+- ✅ Listagem de produtos energéticos
+- ✅ Busca de produtos por ID
+- ✅ Filtro de produtos por nome
+- ✅ Listagem de clientes atacadistas
+- ✅ Busca de clientes por ID
+- ✅ Relacionamentos de dados (energéticos, marcas, volumes, preços)
 - ✅ Tratamento de erros centralizado
 - ✅ Suporte a CORS
 - ✅ Estrutura MVC organizada
@@ -33,12 +37,12 @@ Antes de começar, você precisará ter instalado:
 - **npm** ou **yarn**
 - Conta no **Supabase** (gratuita)
 
-## 🚀 Instalação
+## 🚀 Instalação e Configuração
 
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/explosion-api.git
+git clone https://github.com/Wendersonjose/explosion-api.git
 cd explosion-api
 ```
 
@@ -50,30 +54,57 @@ npm install
 
 ### 3. Configure as variáveis de ambiente
 
-Crie um arquivo `.env` na raiz do projeto:
+Copie o arquivo de exemplo e configure com suas credenciais:
 
-```env
-# Porta do servidor
-PORT=3000
-
-# Configurações do Supabase
-SUPABASE_URL=sua_url_do_supabase
-SUPABASE_KEY=sua_chave_anon_do_supabase
-
-# Ambiente
-NODE_ENV=development
+```bash
+cp .env.example .env
 ```
+
+Edite o arquivo `.env` com suas credenciais (veja seção [Variáveis de Ambiente](#-variáveis-de-ambiente) abaixo).
 
 > **⚠️ Importante:** Nunca commit o arquivo `.env` no repositório. Ele já está incluído no `.gitignore`.
 
-### 4. Como obter as credenciais do Supabase
+### 4. Inicie o servidor
 
-1. Acesse [supabase.com](https://supabase.com/) e crie uma conta
+**Modo desenvolvimento (com hot reload):**
+```bash
+npm run dev
+```
+
+**Modo produção:**
+```bash
+npm start
+```
+
+O servidor iniciará em `http://localhost:3000`
+
+## 🔐 Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+
+| Variável | Descrição | Exemplo |
+|----------|-----------|---------|
+| `PORT` | Porta do servidor | `3000` |
+| `SUPABASE_URL` | URL do projeto Supabase | `https://xxxxx.supabase.co` |
+| `SUPABASE_KEY` | Chave anon/public do Supabase | `eyJhbGc...` |
+| `NODE_ENV` | Ambiente de execução | `development` ou `production` |
+
+### Como obter as credenciais do Supabase
+
+1. Acesse [supabase.com](https://supabase.com/) e crie uma conta gratuita
 2. Crie um novo projeto
-3. Vá em **Settings** → **API**
+3. Acesse **Settings** → **API** no painel do seu projeto
 4. Copie:
-   - **Project URL** → `SUPABASE_URL`
-   - **anon/public key** → `SUPABASE_KEY`
+   - **Project URL** → Use como `SUPABASE_URL`
+   - **anon/public key** → Use como `SUPABASE_KEY`
+
+**Exemplo de arquivo `.env`:**
+```env
+PORT=3000
+SUPABASE_URL=https://seu-projeto.supabase.co
+SUPABASE_KEY=sua_chave_anon_aqui
+NODE_ENV=development
+```
 
 ## 📁 Estrutura do Projeto
 
@@ -107,6 +138,23 @@ explosion-api/
 http://localhost:3000/api/v1
 ```
 
+### Status da API
+
+```http
+GET /
+```
+
+Verifica se a API está online.
+
+**Resposta:**
+```json
+{
+  "message": "API Explosion rodando"
+}
+```
+
+---
+
 ### Produtos
 
 #### Listar todos os produtos
@@ -115,9 +163,21 @@ http://localhost:3000/api/v1
 GET /api/v1/produtos
 ```
 
-**Query Parameters:**
-- `search` (opcional) - Busca por nome do produto
-- `marca` (opcional) - Filtra por nome da marca
+Lista todos os produtos energéticos ativos no catálogo.
+
+**Query Parameters (opcionais):**
+| Parâmetro | Tipo | Descrição |
+|-----------|------|-----------|
+| `search` | string | Busca produtos por nome (case-insensitive) |
+
+**Exemplo de requisição:**
+```bash
+# Listar todos os produtos
+curl http://localhost:3000/api/v1/produtos
+
+# Buscar produtos por nome
+curl http://localhost:3000/api/v1/produtos?search=monster
+```
 
 **Resposta de Sucesso (200):**
 ```json
@@ -127,13 +187,13 @@ GET /api/v1/produtos
   "data": [
     {
       "id_produto": 1,
-      "nome_produto": "Red Bull 250ml",
-      "descricao": "Energético Red Bull",
+      "nome_produto": "Red Bull Energy Drink 250ml",
+      "descricao": "Energético Red Bull tradicional",
       "imagem_url": "https://...",
       "estoque": 100,
       "ativo": true,
       "energeticos": {
-        "nome_energetico": "Red Bull",
+        "nome_energetico": "Red Bull Original",
         "marcas": {
           "nome_marca": "Red Bull GmbH"
         }
@@ -155,8 +215,17 @@ GET /api/v1/produtos
 GET /api/v1/produtos/:id
 ```
 
-**Parâmetros:**
-- `id` - ID do produto
+Retorna os detalhes de um produto específico.
+
+**Parâmetros da URL:**
+| Parâmetro | Tipo | Descrição |
+|-----------|------|-----------|
+| `id` | integer | ID do produto |
+
+**Exemplo de requisição:**
+```bash
+curl http://localhost:3000/api/v1/produtos/1
+```
 
 **Resposta de Sucesso (200):**
 ```json
@@ -164,8 +233,23 @@ GET /api/v1/produtos/:id
   "success": true,
   "data": {
     "id_produto": 1,
-    "nome_produto": "Red Bull 250ml",
-    ...
+    "nome_produto": "Red Bull Energy Drink 250ml",
+    "descricao": "Energético Red Bull tradicional",
+    "imagem_url": "https://...",
+    "estoque": 100,
+    "ativo": true,
+    "energeticos": {
+      "nome_energetico": "Red Bull Original",
+      "marcas": {
+        "nome_marca": "Red Bull GmbH"
+      }
+    },
+    "volumes": {
+      "ml": 250
+    },
+    "precos_varejo": {
+      "preco_varejo_unitario": 7.99
+    }
   }
 }
 ```
@@ -178,12 +262,21 @@ GET /api/v1/produtos/:id
 }
 ```
 
+---
+
 ### Clientes
 
 #### Listar todos os clientes atacadistas
 
 ```http
 GET /api/v1/clientes
+```
+
+Retorna a lista de todos os clientes atacadistas cadastrados.
+
+**Exemplo de requisição:**
+```bash
+curl http://localhost:3000/api/v1/clientes
 ```
 
 **Resposta de Sucesso (200):**
@@ -193,10 +286,11 @@ GET /api/v1/clientes
   "data": [
     {
       "id_cliente_atacado": 1,
-      "nome_empresa": "Distribuidora XYZ",
+      "nome_empresa": "Distribuidora XYZ Ltda",
       "cnpj": "12.345.678/0001-90",
-      "email": "contato@xyz.com",
-      ...
+      "email": "contato@distribuidoraxyz.com",
+      "telefone": "(11) 98765-4321",
+      "endereco": "Rua Exemplo, 123"
     }
   ]
 }
@@ -208,8 +302,17 @@ GET /api/v1/clientes
 GET /api/v1/clientes/:id
 ```
 
-**Parâmetros:**
-- `id` - ID do cliente atacadista
+Retorna os detalhes de um cliente atacadista específico.
+
+**Parâmetros da URL:**
+| Parâmetro | Tipo | Descrição |
+|-----------|------|-----------|
+| `id` | integer | ID do cliente atacadista |
+
+**Exemplo de requisição:**
+```bash
+curl http://localhost:3000/api/v1/clientes/1
+```
 
 **Resposta de Sucesso (200):**
 ```json
@@ -217,8 +320,11 @@ GET /api/v1/clientes/:id
   "success": true,
   "data": {
     "id_cliente_atacado": 1,
-    "nome_empresa": "Distribuidora XYZ",
-    ...
+    "nome_empresa": "Distribuidora XYZ Ltda",
+    "cnpj": "12.345.678/0001-90",
+    "email": "contato@distribuidoraxyz.com",
+    "telefone": "(11) 98765-4321",
+    "endereco": "Rua Exemplo, 123"
   }
 }
 ```
@@ -231,33 +337,19 @@ GET /api/v1/clientes/:id
 }
 ```
 
-### Status da API
-
-```http
-GET /
-```
-
-**Resposta:**
-```json
-{
-  "message": "API Explosion rodando"
-}
-```
-
 ## 🎯 Como Executar
 
-### Modo de Desenvolvimento
+### Scripts Disponíveis
 
 ```bash
+# Desenvolvimento com hot reload
 npm run dev
-```
 
-O servidor iniciará em `http://localhost:3000` com hot reload habilitado.
-
-### Modo de Produção
-
-```bash
+# Produção
 npm start
+
+# Testes (a implementar)
+npm test
 ```
 
 ## 🧪 Testando a API
@@ -265,25 +357,31 @@ npm start
 ### Usando cURL
 
 ```bash
-# Listar produtos
+# Status da API
+curl http://localhost:3000/
+
+# Listar todos os produtos
 curl http://localhost:3000/api/v1/produtos
 
-# Buscar produto específico
+# Buscar produtos por nome
+curl http://localhost:3000/api/v1/produtos?search=monster
+
+# Buscar produto específico por ID
 curl http://localhost:3000/api/v1/produtos/1
 
-# Buscar produtos com filtro
-curl "http://localhost:3000/api/v1/produtos?search=red&marca=bull"
-
-# Listar clientes
+# Listar todos os clientes
 curl http://localhost:3000/api/v1/clientes
+
+# Buscar cliente específico por ID
+curl http://localhost:3000/api/v1/clientes/1
 ```
 
-### Usando ferramentas GUI
+### Ferramentas Recomendadas
 
-Recomendamos usar:
-- [Postman](https://www.postman.com/)
-- [Insomnia](https://insomnia.rest/)
-- [Thunder Client](https://www.thunderclient.com/) (extensão VS Code)
+- **[Postman](https://www.postman.com/)** - Cliente API completo
+- **[Insomnia](https://insomnia.rest/)** - Cliente API leve
+- **[Thunder Client](https://www.thunderclient.com/)** - Extensão para VS Code
+- **[REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)** - Extensão para VS Code
 
 ## 🗄️ Estrutura do Banco de Dados
 
@@ -307,82 +405,121 @@ O projeto utiliza as seguintes tabelas no Supabase:
 
 ## 🔒 Segurança
 
+Medidas de segurança implementadas:
+
 - ✅ Variáveis de ambiente para credenciais sensíveis
-- ✅ CORS configurado
-- ✅ Validação de ambiente no startup
-- ✅ Tratamento de erros centralizado
-- ✅ Logs de erro em desenvolvimento
+- ✅ CORS configurado para controle de origens
+- ✅ Validação de variáveis obrigatórias no startup
+- ✅ Tratamento centralizado de erros
+- ✅ Logs detalhados em ambiente de desenvolvimento
+- ✅ Arquivo `.env` incluído no `.gitignore`
 
 ## 📝 Scripts Disponíveis
 
-```bash
-# Iniciar servidor em desenvolvimento (com hot reload)
-npm run dev
+| Script | Comando | Descrição |
+|--------|---------|-----------|
+| Desenvolvimento | `npm run dev` | Inicia servidor com hot reload (nodemon) |
+| Produção | `npm start` | Inicia servidor em modo produção |
+| Testes | `npm test` | Executa testes (a implementar) |
 
-# Iniciar servidor em produção
-npm start
+## 🤝 Como Contribuir
 
-# Executar testes (a implementar)
-npm test
-```
+Contribuições são bem-vindas! Para contribuir:
 
-## 🤝 Contribuindo
+1. Faça um **fork** do projeto
+2. Crie uma **branch** para sua feature (`git checkout -b feature/MinhaFeature`)
+3. **Commit** suas alterações (`git commit -m 'feat: adiciona MinhaFeature'`)
+4. Faça **push** para a branch (`git push origin feature/MinhaFeature`)
+5. Abra um **Pull Request**
 
-Contribuições são bem-vindas! Siga os passos abaixo:
+### Padrão de Commits
 
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona MinhaFeature'`)
-4. Push para a branch (`git push origin feature/MinhaFeature`)
-5. Abra um Pull Request
+Seguimos o [Conventional Commits](https://www.conventionalcommits.org/):
 
-### Padrões de Commit
+| Tipo | Descrição | Exemplo |
+|------|-----------|---------|
+| `feat` | Nova funcionalidade | `feat: adiciona carrinho de compras` |
+| `fix` | Correção de bug | `fix: corrige cálculo de preço` |
+| `docs` | Documentação | `docs: atualiza README` |
+| `refactor` | Refatoração de código | `refactor: melhora estrutura do controller` |
+| `style` | Formatação | `style: ajusta indentação` |
+| `test` | Testes | `test: adiciona testes de produtos` |
+| `chore` | Tarefas gerais | `chore: atualiza dependências` |
 
-Seguimos o padrão de [Conventional Commits](https://www.conventionalcommits.org/):
+## 🐛 Reportar Bugs
 
-- `feat:` - Nova funcionalidade
-- `fix:` - Correção de bug
-- `docs:` - Alteração em documentação
-- `refactor:` - Refatoração de código
-- `style:` - Formatação de código
-- `test:` - Adição de testes
-- `chore:` - Tarefas gerais
+Encontrou um bug? [Abra uma issue](https://github.com/Wendersonjose/explosion-api/issues) incluindo:
 
-## 🐛 Reportando Bugs
-
-Encontrou um bug? Abra uma [issue](https://github.com/seu-usuario/explosion-api/issues) com:
-
-- Descrição clara do problema
-- Passos para reproduzir
-- Comportamento esperado vs atual
-- Screenshots (se aplicável)
-- Ambiente (Node.js version, OS, etc)
+- ✅ Descrição clara do problema
+- ✅ Passos para reproduzir
+- ✅ Comportamento esperado vs atual
+- ✅ Screenshots (se aplicável)
+- ✅ Informações do ambiente (Node.js, OS, etc)
 
 ## 📄 Licença
 
-Este projeto está sob a licença ISC.
+Este projeto está sob a licença **ISC**.
 
 ## 👨‍💻 Autor
 
-Desenvolvido com ❤️ para o desafio técnico.
+Desenvolvido por **Wenderson Jose** para desafio técnico.
+
+- GitHub: [@Wendersonjose](https://github.com/Wendersonjose)
 
 ---
 
 ## 🚧 Roadmap
 
-Funcionalidades planejadas para versões futuras:
+### Funcionalidades Planejadas
 
-- [ ] Implementar testes unitários e de integração
-- [ ] Adicionar autenticação JWT
-- [ ] Implementar paginação nos endpoints
-- [ ] Criar endpoints POST/PUT/DELETE
-- [ ] Adicionar validação de dados com Joi/Yup
-- [ ] Implementar rate limiting
+#### 🔐 Autenticação e Usuários
+- [ ] Sistema de autenticação com JWT
+- [ ] Registro de novos usuários
+- [ ] Login e logout
+- [ ] Recuperação de senha
+- [ ] Perfis de usuário (cliente e administrador)
+
+#### 🛒 E-commerce
+- [ ] Carrinho de compras
+  - [ ] Adicionar produtos ao carrinho
+  - [ ] Remover produtos do carrinho
+  - [ ] Atualizar quantidades
+  - [ ] Persistência do carrinho
+- [ ] Sistema de pedidos
+  - [ ] Criar pedido
+  - [ ] Histórico de pedidos
+  - [ ] Rastreamento de status
+  - [ ] Cancelamento de pedidos
+- [ ] Gestão de endereços de entrega
+- [ ] Cálculo de frete
+
+#### 💳 Pagamentos
+- [ ] Integração com gateway de pagamento
+- [ ] Múltiplas formas de pagamento
+- [ ] Confirmação de pagamento
+- [ ] Geração de comprovantes
+
+#### 🎛️ Área Administrativa
+- [ ] Dashboard administrativo
+- [ ] CRUD completo de produtos
+- [ ] Gestão de categorias e marcas
+- [ ] Gerenciamento de estoque
+- [ ] Visualização de pedidos
+- [ ] Relatórios de vendas
+- [ ] Gestão de clientes
+
+#### 📊 Melhorias Técnicas
+- [ ] Paginação em todas as listagens
+- [ ] Filtros avançados (marca, categoria, preço)
+- [ ] Ordenação de resultados
+- [ ] Validação de dados com Joi/Yup
+- [ ] Testes unitários e de integração
 - [ ] Documentação Swagger/OpenAPI
+- [ ] Rate limiting
+- [ ] Cache com Redis
+- [ ] Logs estruturados
 - [ ] Docker e Docker Compose
 - [ ] CI/CD com GitHub Actions
-- [ ] Cache com Redis
-- [ ] Logs estruturados com Winston
 
 ## 📚 Recursos Adicionais
 
@@ -390,11 +527,25 @@ Funcionalidades planejadas para versões futuras:
 - [Documentação do Supabase](https://supabase.com/docs)
 - [Guia de APIs RESTful](https://restfulapi.net/)
 - [Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices)
+- [Conventional Commits](https://www.conventionalcommits.org/)
 
 ---
 
-**💡 Dica:** Se você está fazendo um fork deste projeto, não esqueça de:
-1. Atualizar as URLs do repositório neste README
-2. Criar seu próprio projeto no Supabase
-3. Configurar as variáveis de ambiente corretamente
-4. Dar uma ⭐ no projeto original se foi útil!
+## 💡 Fazendo Fork do Projeto
+
+Se você está fazendo um fork deste projeto:
+
+1. ⭐ **Dê uma estrela** no projeto original
+2. 🔧 Atualize as URLs do repositório neste README
+3. 🗄️ Crie seu próprio projeto no [Supabase](https://supabase.com/)
+4. 🔐 Configure suas variáveis de ambiente no `.env`
+5. 📝 Personalize conforme sua necessidade
+6. 🚀 Divirta-se codando!
+
+---
+
+<div align="center">
+
+**Feito com ❤️ e ☕**
+
+</div>
