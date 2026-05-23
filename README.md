@@ -1014,58 +1014,90 @@ Desenvolvido por **Wenderson Jose** para desafio técnico.
 
 ---
 
-## 🚧 Roadmap
+# 🚧 Roadmap
 
-### Funcionalidades Planejadas
+## 🔐 Autenticação e Usuários
 
-#### 🔐 Autenticação e Usuários
-- [ ] Sistema de autenticação com JWT
-- [ ] Registro de novos usuários
-- [ ] Login e logout
-- [ ] Recuperação de senha
-- [ ] Perfis de usuário (cliente e administrador)
+* [x] Sistema de autenticação com JWT
+* [x] Registro de novos usuários
+* [x] Login
+* [ ] Logout
+* [ ] Recuperação de senha
+* [x] Perfis de usuário (cliente e administrador)
 
-#### 🛒 E-commerce
-- [ ] Carrinho de compras
-  - [ ] Adicionar produtos ao carrinho
-  - [ ] Remover produtos do carrinho
-  - [ ] Atualizar quantidades
-  - [ ] Persistência do carrinho
-- [ ] Sistema de pedidos
-  - [ ] Criar pedido
-  - [ ] Histórico de pedidos
-  - [ ] Rastreamento de status
-  - [ ] Cancelamento de pedidos
-- [ ] Gestão de endereços de entrega
-- [ ] Cálculo de frete
+---
 
-#### 💳 Pagamentos
-- [ ] Integração com gateway de pagamento
-- [ ] Múltiplas formas de pagamento
-- [ ] Confirmação de pagamento
-- [ ] Geração de comprovantes
+## 🛒 E-commerce
 
-#### 🎛️ Área Administrativa
-- [ ] Dashboard administrativo
-- [ ] CRUD completo de produtos
-- [ ] Gestão de categorias e marcas
-- [ ] Gerenciamento de estoque
-- [ ] Visualização de pedidos
-- [ ] Relatórios de vendas
-- [ ] Gestão de clientes
+* [ ] Carrinho de compras
+* [ ] Adicionar produtos ao carrinho
+* [ ] Remover produtos do carrinho
+* [ ] Atualizar quantidades
+* [ ] Persistência do carrinho
 
-#### 📊 Melhorias Técnicas
-- [ ] Paginação em todas as listagens
-- [ ] Filtros avançados (marca, categoria, preço)
-- [ ] Ordenação de resultados
-- [ ] Validação de dados com Joi/Yup
-- [ ] Testes unitários e de integração
-- [ ] Documentação Swagger/OpenAPI
-- [ ] Rate limiting
-- [ ] Cache com Redis
-- [ ] Logs estruturados
-- [ ] Docker e Docker Compose
-- [ ] CI/CD com GitHub Actions
+### Sistema de Pedidos
+
+* [ ] Criar pedido
+* [ ] Histórico de pedidos
+* [ ] Rastreamento de status
+* [ ] Cancelamento de pedidos
+
+### Entrega
+
+* [ ] Gestão de endereços
+* [ ] Cálculo de frete
+
+---
+
+## 💳 Pagamentos
+
+* [ ] Integração com gateway de pagamento
+* [ ] Múltiplas formas de pagamento
+* [ ] Confirmação de pagamento
+* [ ] Geração de comprovantes
+
+---
+
+## 🎛️ Área Administrativa
+
+* [ ] Dashboard administrativo
+* [ ] CRUD completo de produtos
+* [ ] Gestão de categorias e marcas
+* [ ] Gerenciamento de estoque
+* [ ] Visualização de pedidos
+* [ ] Relatórios de vendas
+* [x] Gestão de clientes (controle administrativo parcial)
+
+---
+
+## 📊 Melhorias Técnicas
+
+* [ ] Paginação em listagens
+* [x] Pesquisa por nome de produtos
+* [ ] Filtros avançados (marca, categoria e preço)
+* [ ] Ordenação de resultados
+* [ ] Validação com Joi/Yup
+* [ ] Testes unitários e integração
+* [ ] Swagger/OpenAPI
+* [ ] Rate limiting
+* [ ] Cache com Redis
+* [ ] Logs estruturados
+* [ ] Docker / Docker Compose
+* [ ] CI/CD com GitHub Actions
+
+### Status Atual
+
+Backend concluído aproximadamente:
+
+* Estrutura base: 100%
+* Produtos: 60%
+* Autenticação: 85%
+* Controle de acesso: 80%
+* E-commerce: 10%
+* Área administrativa: 15%
+* Infraestrutura: 20%
+
+Observação: os percentuais representam progresso funcional aproximado do projeto e devem ser atualizados conforme novas funcionalidades forem implementadas.
 
 ## 📚 Recursos Adicionais
 
