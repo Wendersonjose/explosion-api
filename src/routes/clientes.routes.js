@@ -1,9 +1,16 @@
 const express = require('express')
 const router = express.Router()
-const clientesController = require('../controllers/clientes.controller')
 
-// Rotas para clientes atacadistas
-router.get('/', clientesController.listarClientes)
-router.get('/:id', clientesController.buscarClientePorId)
+const roleMiddleware = require('../middlewares/role.middleware')
+const authMiddleware = require('../middlewares/auth.middleware')
+
+const {
+  listarClientes,
+  buscarClientePorId
+} = require('../controllers/clientes.controller')
+
+router.get('/', authMiddleware, roleMiddleware('admin'), listarClientes)
+
+router.get('/:id', authMiddleware, roleMiddleware('admin'), buscarClientePorId)
 
 module.exports = router
