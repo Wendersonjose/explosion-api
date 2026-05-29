@@ -8,6 +8,7 @@ const clientesRoutes = require('./routes/clientes.routes')
 const produtosRoutes = require('./routes/produtos.routes')
 const authRoutes = require('./routes/auth.routes')
 const errorHandler = require('./middlewares/errorHandler')
+const carrinhoRoutes = require('./routes/carrinho.routes')
 
 const app = express()
 
@@ -26,6 +27,7 @@ app.get('/', (req, res) => {
 app.use('/api/v1/clientes', clientesRoutes)
 app.use('/api/v1/produtos', produtosRoutes)
 app.use('/api/v1/auth', authRoutes)
+app.use('/api/v1/carrinho', carrinhoRoutes)
 
 // Middleware de tratamento de erros (deve ser o último)
 app.use(errorHandler)

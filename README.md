@@ -592,6 +592,177 @@ curl http://localhost:3000/api/v1/clientes/1
 
 ---
 
+### 🛒 Carrinho de Compras
+
+Endpoints para gerenciamento do carrinho de compras do usuário autenticado.
+
+#### 1. Obter Carrinho (🔒 Protegida)
+
+```http
+GET /api/v1/carrinho
+```
+
+**Headers:**
+```http
+Authorization: Bearer seu_token_jwt_aqui
+```
+
+**Resposta (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Carrinho obtido com sucesso",
+  "data": {
+    "id_carrinho": 1,
+    "status": "ativo",
+    "criado_em": "2026-05-29T10:30:00.000Z",
+    "atualizado_em": "2026-05-29T14:20:00.000Z",
+    "itens_carrinho": [
+      {
+        "id_item_carrinho": 1,
+        "id_produto": 5,
+        "quantidade": 2,
+        "preco_unitario": 8.99,
+        "produtos": {
+          "nome_produto": "Monster Energy Original - 473ml",
+          "descricao": "Energético com blend exclusivo de ingredientes",
+          "imagem_url": "https://example.com/monster.jpg"
+        }
+      },
+      {
+        "id_item_carrinho": 2,
+        "id_produto": 3,
+        "quantidade": 1,
+        "preco_unitario": 7.99,
+        "produtos": {
+          "nome_produto": "Red Bull Energy Drink 250ml",
+          "descricao": "Energético Red Bull tradicional",
+          "imagem_url": "https://example.com/redbull.jpg"
+        }
+      }
+    ],
+    "total": 25.97
+  }
+}
+```
+
+**Resposta Carrinho Vazio (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Carrinho vazio",
+  "data": {
+    "itens": [],
+    "total": 0
+  }
+}
+```
+
+**Erros:**
+- `401` - Token não fornecido ou inválido
+
+---
+
+#### 2. Adicionar Item ao Carrinho (🔒 Protegida)
+
+```http
+POST /api/v1/carrinho/adicionar
+```
+
+**Headers:**
+```http
+Authorization: Bearer seu_token_jwt_aqui
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "id_produto": 5,
+  "quantidade": 2
+}
+```
+
+**Resposta Item Adicionado (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Produto adicionado ao carrinho",
+  "data": {
+    "id_item_carrinho": 1,
+    "id_carrinho": 1,
+    "id_produto": 5,
+    "quantidade": 2,
+    "preco_unitario": 8.99
+  }
+}
+```
+
+**Resposta Quantidade Atualizada (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Quantidade do produto atualizada no carrinho",
+  "data": {
+    "id_item_carrinho": 1,
+    "id_carrinho": 1,
+    "id_produto": 5,
+    "quantidade": 4,
+    "preco_unitario": 8.99
+  }
+}
+```
+
+**Validações:**
+- `id_produto` e `quantidade` são obrigatórios
+- `quantidade` deve ser maior que zero
+- Produto deve existir e estar ativo
+- Estoque deve ser suficiente para a quantidade solicitada
+- Se o item já existe no carrinho, a quantidade é incrementada
+
+**Erros:**
+- `400` - Campos obrigatórios ausentes, quantidade inválida ou estoque insuficiente
+- `401` - Token não fornecido ou inválido
+- `404` - Produto não encontrado
+
+---
+
+#### 3. Remover Item do Carrinho (🔒 Protegida)
+
+```http
+DELETE /api/v1/carrinho/item/:id_item_carrinho
+```
+
+**Headers:**
+```http
+Authorization: Bearer seu_token_jwt_aqui
+```
+
+**Parâmetros da URL:**
+| Parâmetro | Tipo | Descrição |
+|-----------|------|-----------||
+| `id_item_carrinho` | integer | ID do item no carrinho |
+
+**Exemplo:**
+```bash
+curl -X DELETE http://localhost:3000/api/v1/carrinho/item/1 \
+  -H "Authorization: Bearer seu_token_jwt_aqui"
+```
+
+**Resposta (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Item removido do carrinho"
+}
+```
+
+**Erros:**
+- `401` - Token não fornecido ou inválido
+- `404` - Carrinho ou item não encontrado
+
+---
+
 ### ⚠️ Tratamento de Erros
 
 Todas as respostas de erro seguem o padrão:
@@ -1027,34 +1198,66 @@ Desenvolvido por **Wenderson Jose** para desafio técnico.
 
 ---
 
-## 🛒 E-commerce
+## 🛒 Carrinho de Compras
 
-* [ ] Carrinho de compras
-* [ ] Adicionar produtos ao carrinho
-* [ ] Remover produtos do carrinho
-* [ ] Atualizar quantidades
-* [ ] Persistência do carrinho
+* [x] Consultar carrinho do usuário autenticado
+* [x] Adicionar item ao carrinho
+* [x] Atualizar quantidade automaticamente (incrementa se item já existe)
+* [x] Remover item do carrinho
+* [x] Cálculo de total do carrinho
+* [x] Validações de estoque e produto ativo
+* [x] Persistência no banco de dados
+* [ ] Atualizar quantidade manualmente (endpoint específico)
+* [ ] Limpar carrinho completo
+* [ ] Finalizar carrinho (converter em pedido)
 
-### Sistema de Pedidos
+---
 
-* [ ] Criar pedido
-* [ ] Histórico de pedidos
-* [ ] Rastreamento de status
+## 📦 Produtos
+
+* [x] Listagem de produtos ativos
+* [x] Busca por ID
+* [x] Filtro por nome (case-insensitive)
+* [x] Filtro por marca
+* [x] Relacionamentos (energéticos, marcas, volumes, preços)
+* [ ] CRUD completo (criar, editar, deletar)
+* [ ] Upload de imagens
+* [ ] Filtros avançados (categoria, preço, estoque)
+* [ ] Ordenação personalizada
+* [ ] Paginação
+
+---
+
+## 👥 Clientes
+
+* [x] Listagem de clientes atacadistas
+* [x] Busca de cliente por ID
+* [x] Proteção com autenticação JWT
+* [ ] CRUD completo de clientes
+* [ ] Validação de CNPJ
+* [ ] Histórico de compras por cliente
+
+---
+
+## 💼 Sistema de Pedidos
+
+* [ ] Criar pedido a partir do carrinho
+* [ ] Histórico de pedidos do usuário
+* [ ] Rastreamento de status do pedido
+* [ ] Detalhes do pedido
 * [ ] Cancelamento de pedidos
-
-### Entrega
-
-* [ ] Gestão de endereços
-* [ ] Cálculo de frete
+* [ ] Integração com estoque (baixa automática)
 
 ---
 
 ## 💳 Pagamentos
 
 * [ ] Integração com gateway de pagamento
-* [ ] Múltiplas formas de pagamento
+* [ ] Múltiplas formas de pagamento (cartão, PIX, boleto)
 * [ ] Confirmação de pagamento
+* [ ] Webhooks de status
 * [ ] Geração de comprovantes
+* [ ] Histórico de transações
 
 ---
 
@@ -1064,9 +1267,10 @@ Desenvolvido por **Wenderson Jose** para desafio técnico.
 * [ ] CRUD completo de produtos
 * [ ] Gestão de categorias e marcas
 * [ ] Gerenciamento de estoque
-* [ ] Visualização de pedidos
+* [ ] Visualização de todos os pedidos
 * [ ] Relatórios de vendas
-* [x] Gestão de clientes (controle administrativo parcial)
+* [x] Gestão de clientes (visualização)
+* [ ] Controle de usuários do sistema
 
 ---
 
@@ -1074,30 +1278,40 @@ Desenvolvido por **Wenderson Jose** para desafio técnico.
 
 * [ ] Paginação em listagens
 * [x] Pesquisa por nome de produtos
-* [ ] Filtros avançados (marca, categoria e preço)
+* [x] Filtro por marca
+* [ ] Filtros avançados (categoria, faixa de preço)
 * [ ] Ordenação de resultados
 * [ ] Validação com Joi/Yup
-* [ ] Testes unitários e integração
-* [ ] Swagger/OpenAPI
+* [ ] Testes unitários e integração (Jest/Supertest)
+* [ ] Documentação com Swagger/OpenAPI
 * [ ] Rate limiting
 * [ ] Cache com Redis
-* [ ] Logs estruturados
+* [ ] Logs estruturados (Winston/Pino)
 * [ ] Docker / Docker Compose
 * [ ] CI/CD com GitHub Actions
+* [ ] Monitoramento e observabilidade
 
-### Status Atual
+---
 
-Backend concluído aproximadamente:
+### 📈 Status Atual
 
-* Estrutura base: 100%
-* Produtos: 60%
-* Autenticação: 85%
-* Controle de acesso: 80%
-* E-commerce: 10%
-* Área administrativa: 15%
-* Infraestrutura: 20%
+Progresso funcional aproximado do backend:
 
-Observação: os percentuais representam progresso funcional aproximado do projeto e devem ser atualizados conforme novas funcionalidades forem implementadas.
+| Módulo | Progresso | Status |
+|--------|-----------|--------|
+| **Estrutura Base** | 100% | ✅ Completo |
+| **Autenticação** | 85% | 🟢 Avançado |
+| **Produtos** | 65% | 🟡 Em Progresso |
+| **Carrinho** | 75% | 🟡 Em Progresso |
+| **Clientes** | 40% | 🟡 Básico |
+| **Pedidos** | 0% | ⏳ Não Iniciado |
+| **Pagamentos** | 0% | ⏳ Não Iniciado |
+| **Área Admin** | 15% | 🔴 Inicial |
+| **Infraestrutura** | 25% | 🔴 Inicial |
+
+**Última atualização:** 29 de maio de 2026
+
+---
 
 ## 📚 Recursos Adicionais
 
