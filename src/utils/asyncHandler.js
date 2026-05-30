@@ -5,7 +5,11 @@
  * @returns {Function} Middleware do Express
  */
 const asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch(next)
-}
+  try {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  } catch (error) {
+    next(error);
+  }
+};
 
-module.exports = asyncHandler
+module.exports = asyncHandler;

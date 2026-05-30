@@ -6,12 +6,14 @@
 [![Express](https://img.shields.io/badge/Express-v5.2-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![JWT](https://img.shields.io/badge/JWT-Authentication-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
+[![Tests](https://img.shields.io/badge/Tests-48%2F71_Passing-yellow?style=for-the-badge&logo=jest&logoColor=white)](https://jestjs.io/)
+[![Coverage](https://img.shields.io/badge/Coverage-59.73%25-orange?style=for-the-badge&logo=jest&logoColor=white)](https://jestjs.io/)
 [![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)](https://github.com)
 
 **API REST profissional para e-commerce Explosion**  
 Sistema completo de gerenciamento de produtos energéticos com autenticação JWT e controle de acesso
 
-[Características](#-características) • [Tecnologias](#-stack-tecnológico) • [Instalação](#-instalação-e-configuração) • [Documentação](#-documentação-da-api) • [Roadmap](#-roadmap)
+[Características](#-características) • [Tecnologias](#-stack-tecnológico) • [Instalação](#-instalação-e-configuração) • [Testes](#-testes-automatizados) • [Documentação](#-documentação-da-api) • [Roadmap](#-roadmap)
 
 </div>
 
@@ -163,6 +165,8 @@ explosion-api/
 | **[Supabase](https://supabase.com/)** | 2.106.1 | BaaS com PostgreSQL |
 | **[JWT](https://jwt.io/)** | 9.0.3 | Autenticação stateless |
 | **[bcryptjs](https://www.npmjs.com/package/bcryptjs)** | 3.0.3 | Hash de senhas |
+| **[Jest](https://jestjs.io/)** | 29.7.0 | Framework de testes |
+| **[Supertest](https://www.npmjs.com/package/supertest)** | 7.0.0 | Testes HTTP/REST |
 | **[CORS](https://www.npmjs.com/package/cors)** | 2.8.6 | Cross-Origin Resource Sharing |
 | **[dotenv](https://www.npmjs.com/package/dotenv)** | 17.4.2 | Gerenciamento de variáveis |
 | **[Nodemon](https://nodemon.io/)** | 3.1.14 | Hot reload (dev) |
@@ -289,6 +293,50 @@ A API utiliza **JWT (JSON Web Token)** para autenticação. Após o login, inclu
 ```http
 Authorization: Bearer seu_token_jwt_aqui
 ```
+
+---
+
+## 🧪 Testes Automatizados
+
+O projeto possui uma suíte completa de testes automatizados com **Jest** e **Supertest**.
+
+### 📊 Status Atual
+
+```
+✓ 48/71 testes passando (67.6%)
+✓ Middlewares: 100% cobertura
+✓ Utils: 100% cobertura  
+✓ Routes: 100% cobertura
+✓ CI/CD configurado com GitHub Actions
+```
+
+### 🚀 Executar Testes
+
+```bash
+# Todos os testes
+npm test
+
+# Com relatório de cobertura
+npm run test:coverage
+
+# Modo watch (desenvolvimento)
+npm run test:watch
+
+# Saída detalhada
+npm run test:verbose
+
+# Apenas testes unitários
+npm test -- __tests__/unit
+
+# Apenas testes de integração
+npm test -- __tests__/integration
+```
+
+### 📝 Documentação Completa
+
+Para documentação detalhada dos testes, consulte:
+- [`__tests__/README.md`](__tests__/README.md) - Guia completo de testes
+- [`TEST_SUMMARY.md`](TEST_SUMMARY.md) - Resumo do status atual e roadmap
 
 ---
 

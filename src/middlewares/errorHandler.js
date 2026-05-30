@@ -3,8 +3,10 @@
  * Padroniza a resposta de erro da API
  */
 const errorHandler = (err, req, res, next) => {
-  // Define status code padrão como 500 se não especificado
-  const statusCode = err.statusCode || 500
+  // Define status code padrão como 500 se não especificado ou inválido
+  const statusCode = (err.statusCode && typeof err.statusCode === 'number' && err.statusCode >= 100 && err.statusCode < 600) 
+    ? err.statusCode 
+    : 500
 
   // Log do erro no console para debug
   console.error('Erro:', err.message)

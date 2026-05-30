@@ -21,3 +21,10 @@ Thumbs.db
 *.swp
 *.swo
 
+# Testes
+coverage
+*.lcov
+.nyc_output
+
+# Environment de teste
+.env.test.local
