@@ -25,6 +25,8 @@ Thumbs.db
 coverage
 *.lcov
 .nyc_output
+*-test.txt
+test-results.txt
 
 # Environment de teste
 .env.test.local
