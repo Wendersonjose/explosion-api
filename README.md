@@ -56,7 +56,24 @@ A **Explosion API** é o backend robusto do e-commerce Explosion, especializado 
 - ✅ Busca de cliente por ID
 - ✅ Dados completos de contato e negócio
 
-#### 🔒 Segurança
+#### � Carrinho de Compras
+- ✅ Obter carrinho do usuário autenticado
+- ✅ Adicionar produtos ao carrinho
+- ✅ Atualizar quantidade de itens
+- ✅ Remover itens do carrinho
+- ✅ Cálculo automático do total
+- ✅ Validação de estoque
+
+#### 📦 Pedidos
+- ✅ Criar pedido a partir do carrinho
+- ✅ Integração com sistema de pagamento
+- ✅ Atualização automática de estoque
+- ✅ Geração de itens do pedido
+- ✅ Registro de transações de pagamento
+- ✅ Gerenciamento de status do pedido
+- ✅ Validação de carrinho e produtos
+
+#### �🔒 Segurança
 - ✅ Variáveis de ambiente (.env)
 - ✅ Tokens JWT com expiração configurável
 - ✅ Validação de entrada de dados
@@ -75,17 +92,21 @@ explosion-api/
 │   │
 │   ├── controllers/
 │   │   ├── auth.controller.js       # Lógica: registro, login, perfil
+│   │   ├── carrinho.controller.js   # Lógica: gestão de carrinho
 │   │   ├── clientes.controller.js   # Lógica: CRUD clientes
+│   │   ├── pedidos.controller.js    # Lógica: criação e gestão de pedidos
 │   │   └── produtos.controller.js   # Lógica: CRUD produtos
 │   │
 │   ├── middlewares/
 │   │   ├── auth.middleware.js       # Verificação JWT
-        ├── role.middleware.js
+│   │   ├── role.middleware.js       # Controle de acesso por perfil
 │   │   └── errorHandler.js          # Tratamento centralizado de erros
 │   │
 │   ├── routes/
 │   │   ├── auth.routes.js           # Endpoints de autenticação
+│   │   ├── carrinho.routes.js       # Endpoints de carrinho
 │   │   ├── clientes.routes.js       # Endpoints de clientes
+│   │   ├── pedidos.routes.js        # Endpoints de pedidos
 │   │   └── produtos.routes.js       # Endpoints de produtos
 │   │
 │   ├── utils/
@@ -811,6 +832,143 @@ curl -X DELETE http://localhost:3000/api/v1/carrinho/item/1 \
 
 ---
 
+### 📦 Pedidos
+
+#### 1. Criar Pedido a partir do Carrinho (🔒 Protegida)
+
+```http
+POST /api/v1/pedidos
+```
+
+**Headers:**
+```http
+Authorization: Bearer seu_token_jwt_aqui
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "id_endereco": 1,
+  "forma_pagamento": "pix"
+}
+```
+
+**Descrição:**
+Cria um novo pedido a partir dos itens do carrinho ativo do usuário. Realiza as seguintes operações em uma transação:
+
+1. Valida o carrinho ativo e seus itens
+2. Calcula o valor total do pedido
+3. Cria o registro do pedido com status "pendente"
+4. Cria os itens do pedido
+5. Registra a transação de pagamento
+6. Atualiza o estoque dos produtos
+7. Remove os itens do carrinho
+8. Finaliza o carrinho (status: "finalizado")
+
+**Parâmetros do Body:**
+
+| Campo | Tipo | Obrigatório | Descrição |
+|-------|------|-------------|------------|
+| `id_endereco` | integer | Sim | ID do endereço de entrega do usuário |
+| `forma_pagamento` | string | Sim | Forma de pagamento: `pix`, `boleto`, `cartao_credito`, `cartao_debito` |
+
+**Resposta (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Pedido criado com sucesso",
+  "data": {
+    "pedido": {
+      "id_pedido": 1,
+      "id_usuario": 5,
+      "id_endereco": 1,
+      "valor_total": 45.97,
+      "status_pedido": "pendente",
+      "criado_em": "2026-05-29T15:30:00.000Z"
+    },
+    "itens": [
+      {
+        "id_item_pedido": 1,
+        "id_produto": 5,
+        "quantidade": 2,
+        "preco_unitario": 8.99,
+        "subtotal": 17.98
+      },
+      {
+        "id_item_pedido": 2,
+        "id_produto": 3,
+        "quantidade": 3,
+        "preco_unitario": 9.33,
+        "subtotal": 27.99
+      }
+    ],
+    "pagamento": {
+      "id_pagamento": 1,
+      "forma_pagamento": "pix",
+      "valor": 45.97,
+      "status_pagamento": "pendente",
+      "criado_em": "2026-05-29T15:30:00.000Z"
+    }
+  }
+}
+```
+
+**Validações Realizadas:**
+- Usuário deve estar autenticado
+- Carrinho deve existir e estar ativo
+- Carrinho deve conter pelo menos 1 item
+- Endereço deve pertencer ao usuário
+- Estoque dos produtos deve ser suficiente
+- Forma de pagamento deve ser válida
+
+**Status do Pedido:**
+- `pendente` - Pedido criado, aguardando confirmação de pagamento
+- `recebido` - Pagamento confirmado
+- `em_separacao` - Pedido sendo preparado
+- `enviado` - Pedido em transporte
+- `entregue` - Pedido entregue ao cliente
+- `cancelado` - Pedido cancelado
+
+**Formas de Pagamento Aceitas:**
+- `pix` - Pagamento via PIX
+- `boleto` - Boleto bancário
+- `cartao_credito` - Cartão de crédito
+- `cartao_debito` - Cartão de débito
+
+**Tabelas Afetadas:**
+- `pedidos` - Novo registro criado
+- `itens_pedido` - Registros dos produtos do pedido
+- `pagamentos` - Registro da transação
+- `produtos` - Estoque atualizado (decrementado)
+- `itens_carrinho` - Itens removidos
+- `carrinhos` - Status atualizado para "finalizado"
+
+**Erros:**
+- `400` - Dados inválidos ou carrinho vazio
+- `401` - Token não fornecido ou inválido
+- `404` - Carrinho não encontrado ou endereço não encontrado
+- `409` - Estoque insuficiente para um ou mais produtos
+- `500` - Erro ao processar pedido (transação revertida)
+
+**Exemplo de Erro - Estoque Insuficiente:**
+```json
+{
+  "success": false,
+  "message": "Estoque insuficiente para o produto: Monster Energy Original - 473ml. Disponível: 5, Solicitado: 10"
+}
+```
+
+**Exemplo de Erro - Carrinho Vazio:**
+```json
+{
+  "success": false,
+  "message": "Carrinho vazio. Adicione produtos antes de criar um pedido"
+}
+```
+
+---
+
 ### ⚠️ Tratamento de Erros
 
 Todas as respostas de erro seguem o padrão:
@@ -1289,12 +1447,16 @@ Desenvolvido por **Wenderson Jose** para desafio técnico.
 
 ## 💼 Sistema de Pedidos
 
-* [ ] Criar pedido a partir do carrinho
+* [x] Criar pedido a partir do carrinho
+* [x] Integração com estoque (baixa automática)
+* [x] Registro de pagamentos
+* [x] Cálculo automático do total
+* [x] Validação de estoque disponível
 * [ ] Histórico de pedidos do usuário
 * [ ] Rastreamento de status do pedido
 * [ ] Detalhes do pedido
 * [ ] Cancelamento de pedidos
-* [ ] Integração com estoque (baixa automática)
+* [ ] Atualização de status (recebido, em_separacao, enviado, entregue)
 
 ---
 
@@ -1350,10 +1512,10 @@ Progresso funcional aproximado do backend:
 | **Estrutura Base** | 100% | ✅ Completo |
 | **Autenticação** | 85% | 🟢 Avançado |
 | **Produtos** | 65% | 🟡 Em Progresso |
-| **Carrinho** | 75% | 🟡 Em Progresso |
+| **Carrinho** | 100% | ✅ Completo |
 | **Clientes** | 40% | 🟡 Básico |
-| **Pedidos** | 0% | ⏳ Não Iniciado |
-| **Pagamentos** | 0% | ⏳ Não Iniciado |
+| **Pedidos** | 60% | 🟡 Em Progresso |
+| **Pagamentos** | 30% | 🟡 Básico |
 | **Área Admin** | 15% | 🔴 Inicial |
 | **Infraestrutura** | 25% | 🔴 Inicial |
 
