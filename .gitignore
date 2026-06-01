@@ -30,3 +30,6 @@ test-results.txt
 
 # Environment de teste
 .env.test.local
+
+# Documentação
+docs
