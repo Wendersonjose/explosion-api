@@ -5,25 +5,23 @@ const supabase = require('../../src/config/supabase');
 
 describe('API Integration - Auth Routes', () => {
   beforeEach(() => {
+    supabase.__reset();
     jest.clearAllMocks();
   });
 
   describe('POST /api/v1/auth/register', () => {
     it('deve registrar novo usuário com sucesso', async () => {
-      // Mock: verificar usuário (não existe)
-      supabase.single.mockResolvedValueOnce({ data: null });
-
-      // Mock: inserir usuário
-      supabase.select.mockResolvedValueOnce({
-        data: [{
+      // Mock: verificar usuário (não existe) + inserir usuário
+      supabase.__setSequence(
+        { data: null, error: null },
+        { data: [{
           id_usuario: 1,
           nome: 'Novo Usuario',
           email: 'novo@test.com',
           tipo_usuario: 'cliente',
           criado_em: new Date().toISOString()
-        }],
-        error: null
-      });
+        }], error: null }
+      );
 
       const response = await request(app)
         .post('/api/v1/auth/register')
@@ -60,9 +58,7 @@ describe('API Integration - Auth Routes', () => {
 
     it('deve rejeitar email já cadastrado', async () => {
       // Mock: usuário já existe
-      supabase.single.mockResolvedValueOnce({
-        data: { id_usuario: 1, email: 'existente@test.com' }
-      });
+      supabase.__setResult({ id_usuario: 1, email: 'existente@test.com' }, null);
 
       const response = await request(app)
         .post('/api/v1/auth/register')
@@ -85,16 +81,13 @@ describe('API Integration - Auth Routes', () => {
     it('deve fazer login com credenciais válidas', async () => {
       const hashedPassword = await bcrypt.hash('123456', 10);
 
-      supabase.single.mockResolvedValueOnce({
-        data: {
-          id_usuario: 1,
-          nome: 'Usuario Teste',
-          email: 'teste@test.com',
-          senha_hash: hashedPassword,
-          tipo_usuario: 'cliente'
-        },
-        error: null
-      });
+      supabase.__setResult({
+        id_usuario: 1,
+        nome: 'Usuario Teste',
+        email: 'teste@test.com',
+        senha_hash: hashedPassword,
+        tipo_usuario: 'cliente'
+      }, null);
 
       const response = await request(app)
         .post('/api/v1/auth/login')
@@ -116,10 +109,7 @@ describe('API Integration - Auth Routes', () => {
     });
 
     it('deve rejeitar login com credenciais inválidas', async () => {
-      supabase.single.mockResolvedValueOnce({
-        data: null,
-        error: new Error('Not found')
-      });
+      supabase.__setResult(null, new Error('Not found'));
 
       const response = await request(app)
         .post('/api/v1/auth/login')
@@ -155,14 +145,12 @@ describe('API Integration - Auth Routes', () => {
     it('deve rejeitar login com senha incorreta', async () => {
       const hashedPassword = await bcrypt.hash('senhaCorreta', 10);
 
-      supabase.single.mockResolvedValueOnce({
-        data: {
-          id_usuario: 1,
-          email: 'teste@test.com',
-          senha_hash: hashedPassword,
-          tipo_usuario: 'cliente'
-        }
-      });
+      supabase.__setResult({
+        id_usuario: 1,
+        email: 'teste@test.com',
+        senha_hash: hashedPassword,
+        tipo_usuario: 'cliente'
+      }, null);
 
       const response = await request(app)
         .post('/api/v1/auth/login')

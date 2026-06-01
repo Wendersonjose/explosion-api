@@ -5,6 +5,7 @@ const supabase = require('../../src/config/supabase');
 
 describe('API Integration - Produtos Routes', () => {
   beforeEach(() => {
+    supabase.__reset();
     jest.clearAllMocks();
   });
 
@@ -15,10 +16,7 @@ describe('API Integration - Produtos Routes', () => {
         { ...mockProduto, id_produto: 2, nome_produto: 'Monster Energy' }
       ];
 
-      supabase.order.mockResolvedValueOnce({
-        data: mockProdutos,
-        error: null
-      });
+      supabase.__setResult(mockProdutos, null);
 
       const response = await request(app)
         .get('/api/v1/produtos')
@@ -33,10 +31,7 @@ describe('API Integration - Produtos Routes', () => {
     });
 
     it('deve filtrar produtos por nome', async () => {
-      supabase.order.mockResolvedValueOnce({
-        data: [mockProduto],
-        error: null
-      });
+      supabase.__setResult([mockProduto], null);
 
       const response = await request(app)
         .get('/api/v1/produtos?search=Red Bull')
@@ -48,10 +43,7 @@ describe('API Integration - Produtos Routes', () => {
     });
 
     it('deve filtrar produtos por marca', async () => {
-      supabase.order.mockResolvedValueOnce({
-        data: [mockProduto],
-        error: null
-      });
+      supabase.__setResult([mockProduto], null);
 
       const response = await request(app)
         .get('/api/v1/produtos?marca=Red Bull')
@@ -65,10 +57,7 @@ describe('API Integration - Produtos Routes', () => {
     });
 
     it('deve aplicar múltiplos filtros', async () => {
-      supabase.order.mockResolvedValueOnce({
-        data: [mockProduto],
-        error: null
-      });
+      supabase.__setResult([mockProduto], null);
 
       const response = await request(app)
         .get('/api/v1/produtos?search=Energy&marca=Red Bull')
@@ -80,10 +69,7 @@ describe('API Integration - Produtos Routes', () => {
     });
 
     it('deve retornar lista vazia quando não há produtos', async () => {
-      supabase.order.mockResolvedValueOnce({
-        data: [],
-        error: null
-      });
+      supabase.__setResult([], null);
 
       const response = await request(app)
         .get('/api/v1/produtos')
@@ -100,10 +86,7 @@ describe('API Integration - Produtos Routes', () => {
 
   describe('GET /api/v1/produtos/:id', () => {
     it('deve retornar produto por ID', async () => {
-      supabase.single.mockResolvedValueOnce({
-        data: mockProduto,
-        error: null
-      });
+      supabase.__setResult(mockProduto, null);
 
       const response = await request(app)
         .get('/api/v1/produtos/1')
@@ -117,10 +100,7 @@ describe('API Integration - Produtos Routes', () => {
     });
 
     it('deve retornar 404 para produto não encontrado', async () => {
-      supabase.single.mockResolvedValueOnce({
-        data: null,
-        error: new Error('Not found')
-      });
+      supabase.__setResult(null, new Error('Not found'));
 
       const response = await request(app)
         .get('/api/v1/produtos/999')
@@ -137,10 +117,7 @@ describe('API Integration - Produtos Routes', () => {
       const ids = [1, 5, 10, 100];
 
       for (const id of ids) {
-        supabase.single.mockResolvedValueOnce({
-          data: { ...mockProduto, id_produto: id },
-          error: null
-        });
+        supabase.__setResult({ ...mockProduto, id_produto: id }, null);
 
         const response = await request(app)
           .get(`/api/v1/produtos/${id}`)
@@ -155,10 +132,7 @@ describe('API Integration - Produtos Routes', () => {
     it('deve lidar com erros do banco de dados', async () => {
       const dbError = new Error('Database connection failed');
       
-      supabase.order.mockResolvedValueOnce({
-        data: null,
-        error: dbError
-      });
+      supabase.__setResult(null, dbError);
 
       const response = await request(app)
         .get('/api/v1/produtos')

@@ -7,6 +7,7 @@ describe('Auth Controller', () => {
   let req, res, next;
 
   beforeEach(() => {
+    supabase.__reset();
     req = {
       body: {},
       usuario: {}
@@ -38,9 +39,7 @@ describe('Auth Controller', () => {
         senha: '123456'
       };
 
-      supabase.single.mockResolvedValueOnce({
-        data: { id_usuario: 1, email: 'teste@example.com' }
-      });
+      supabase.__setResult({ id_usuario: 1, email: 'teste@example.com' }, null);
 
       await authController.register(req, res, next);
 
@@ -58,20 +57,17 @@ describe('Auth Controller', () => {
         senha: '123456'
       };
 
-      // Mock para verificar usuário (não existe)
-      supabase.single.mockResolvedValueOnce({ data: null });
-
-      // Mock para inserir usuário
-      supabase.select.mockResolvedValueOnce({
-        data: [{
+      // Mock para verificar usuário (não existe) + inserir usuário
+      supabase.__setSequence(
+        { data: null, error: null },
+        { data: [{
           id_usuario: 1,
           nome: 'Novo Usuario',
           email: 'novo@example.com',
           tipo_usuario: 'cliente',
           criado_em: new Date().toISOString()
-        }],
-        error: null
-      });
+        }], error: null }
+      );
 
       await authController.register(req, res, next);
 
@@ -91,8 +87,10 @@ describe('Auth Controller', () => {
       };
 
       const dbError = new Error('Database error');
-      supabase.single.mockResolvedValueOnce({ data: null });
-      supabase.select.mockResolvedValueOnce({ data: null, error: dbError });
+      supabase.__setSequence(
+        { data: null, error: null },
+        { data: null, error: dbError }
+      );
 
       await authController.register(req, res, next);
 
@@ -119,10 +117,7 @@ describe('Auth Controller', () => {
         senha: '123456'
       };
 
-      supabase.single.mockResolvedValueOnce({
-        data: null,
-        error: new Error('Not found')
-      });
+      supabase.__setResult(null, new Error('Not found'));
 
       await authController.login(req, res, next);
 
@@ -141,14 +136,12 @@ describe('Auth Controller', () => {
 
       const hashedPassword = await bcrypt.hash('senhaCorreta', 10);
 
-      supabase.single.mockResolvedValueOnce({
-        data: {
-          id_usuario: 1,
-          email: 'teste@example.com',
-          senha_hash: hashedPassword,
-          tipo_usuario: 'cliente'
-        }
-      });
+      supabase.__setResult({
+        id_usuario: 1,
+        email: 'teste@example.com',
+        senha_hash: hashedPassword,
+        tipo_usuario: 'cliente'
+      }, null);
 
       await authController.login(req, res, next);
 
@@ -167,16 +160,13 @@ describe('Auth Controller', () => {
 
       const hashedPassword = await bcrypt.hash('123456', 10);
 
-      supabase.single.mockResolvedValueOnce({
-        data: {
-          id_usuario: 1,
-          nome: 'Usuario Teste',
-          email: 'teste@example.com',
-          senha_hash: hashedPassword,
-          tipo_usuario: 'cliente'
-        },
-        error: null
-      });
+      supabase.__setResult({
+        id_usuario: 1,
+        nome: 'Usuario Teste',
+        email: 'teste@example.com',
+        senha_hash: hashedPassword,
+        tipo_usuario: 'cliente'
+      }, null);
 
       await authController.login(req, res, next);
 
@@ -202,15 +192,13 @@ describe('Auth Controller', () => {
 
       const hashedPassword = await bcrypt.hash('123456', 10);
 
-      supabase.single.mockResolvedValueOnce({
-        data: {
-          id_usuario: 1,
-          nome: 'Usuario Teste',
-          email: 'teste@example.com',
-          senha_hash: hashedPassword,
-          tipo_usuario: 'cliente'
-        }
-      });
+      supabase.__setResult({
+        id_usuario: 1,
+        nome: 'Usuario Teste',
+        email: 'teste@example.com',
+        senha_hash: hashedPassword,
+        tipo_usuario: 'cliente'
+      }, null);
 
       await authController.login(req, res, next);
 

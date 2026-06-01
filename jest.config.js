@@ -23,6 +23,6 @@ module.exports = {
   verbose: true,
   forceExit: true,
   clearMocks: true,
-  resetMocks: true,
-  restoreMocks: true
+  // resetMocks: true,  // Removido - quebrava o mock customizado do Supabase
+  // restoreMocks: true  // Removido - quebrava o mock customizado do Supabase
 };

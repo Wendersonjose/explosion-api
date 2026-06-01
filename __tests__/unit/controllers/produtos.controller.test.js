@@ -6,6 +6,7 @@ describe('Produtos Controller', () => {
   let req, res, next;
 
   beforeEach(() => {
+    supabase.__reset();
     req = {
       query: {},
       params: {}
@@ -21,14 +22,7 @@ describe('Produtos Controller', () => {
     it('deve listar todos os produtos ativos', async () => {
       const mockProdutos = [mockProduto, { ...mockProduto, id_produto: 2 }];
 
-      // Mock da query chain
-      supabase.from.mockReturnThis();
-      supabase.select.mockReturnThis();
-      supabase.eq.mockReturnThis();
-      supabase.order.mockResolvedValueOnce({
-        data: mockProdutos,
-        error: null
-      });
+      supabase.__setResult(mockProdutos, null);
 
       await produtosController.listarProdutos(req, res, next);
 
@@ -43,15 +37,7 @@ describe('Produtos Controller', () => {
     it('deve filtrar produtos por nome quando search é fornecido', async () => {
       req.query = { search: 'Red Bull' };
 
-      supabase.from.mockReturnThis();
-      supabase.select.mockReturnThis();
-      supabase.eq.mockReturnThis();
-      supabase.order.mockReturnThis();
-      supabase.ilike.mockReturnThis();
-      supabase.order.mockResolvedValueOnce({
-        data: [mockProduto],
-        error: null
-      });
+      supabase.__setResult([mockProduto], null);
 
       await produtosController.listarProdutos(req, res, next);
 
@@ -62,15 +48,7 @@ describe('Produtos Controller', () => {
     it('deve filtrar produtos por marca quando fornecida', async () => {
       req.query = { marca: 'Red Bull' };
 
-      supabase.from.mockReturnThis();
-      supabase.select.mockReturnThis();
-      supabase.eq.mockReturnThis();
-      supabase.order.mockReturnThis();
-      supabase.ilike.mockReturnThis();
-      supabase.order.mockResolvedValueOnce({
-        data: [mockProduto],
-        error: null
-      });
+      supabase.__setResult([mockProduto], null);
 
       await produtosController.listarProdutos(req, res, next);
 
@@ -83,15 +61,7 @@ describe('Produtos Controller', () => {
     it('deve aplicar múltiplos filtros simultaneamente', async () => {
       req.query = { search: 'Energy', marca: 'Red Bull' };
 
-      supabase.from.mockReturnThis();
-      supabase.select.mockReturnThis();
-      supabase.eq.mockReturnThis();
-      supabase.order.mockReturnThis();
-      supabase.ilike.mockReturnThis();
-      supabase.order.mockResolvedValueOnce({
-        data: [mockProduto],
-        error: null
-      });
+      supabase.__setResult([mockProduto], null);
 
       await produtosController.listarProdutos(req, res, next);
 
@@ -99,13 +69,7 @@ describe('Produtos Controller', () => {
     });
 
     it('deve retornar array vazio quando não há produtos', async () => {
-      supabase.from.mockReturnThis();
-      supabase.select.mockReturnThis();
-      supabase.eq.mockReturnThis();
-      supabase.order.mockResolvedValueOnce({
-        data: [],
-        error: null
-      });
+      supabase.__setResult([], null);
 
       await produtosController.listarProdutos(req, res, next);
 
@@ -120,13 +84,7 @@ describe('Produtos Controller', () => {
     it('deve chamar next com erro se houver erro no banco', async () => {
       const dbError = new Error('Database error');
       
-      supabase.from.mockReturnThis();
-      supabase.select.mockReturnThis();
-      supabase.eq.mockReturnThis();
-      supabase.order.mockResolvedValueOnce({
-        data: null,
-        error: dbError
-      });
+      supabase.__setResult(null, dbError);
 
       await produtosController.listarProdutos(req, res, next);
 
@@ -138,13 +96,7 @@ describe('Produtos Controller', () => {
     it('deve retornar produto quando ID é válido', async () => {
       req.params = { id: '1' };
 
-      supabase.from.mockReturnThis();
-      supabase.select.mockReturnThis();
-      supabase.eq.mockReturnThis();
-      supabase.single.mockResolvedValueOnce({
-        data: mockProduto,
-        error: null
-      });
+      supabase.__setResult(mockProduto, null);
 
       await produtosController.buscarProdutoPorId(req, res, next);
 
@@ -158,13 +110,7 @@ describe('Produtos Controller', () => {
     it('deve retornar 404 quando produto não é encontrado', async () => {
       req.params = { id: '999' };
 
-      supabase.from.mockReturnThis();
-      supabase.select.mockReturnThis();
-      supabase.eq.mockReturnThis();
-      supabase.single.mockResolvedValueOnce({
-        data: null,
-        error: new Error('Not found')
-      });
+      supabase.__setResult(null, new Error('Not found'));
 
       await produtosController.buscarProdutoPorId(req, res, next);
 
@@ -179,10 +125,7 @@ describe('Produtos Controller', () => {
       req.params = { id: '1' };
       const dbError = new Error('Database connection error');
 
-      supabase.from.mockReturnThis();
-      supabase.select.mockReturnThis();
-      supabase.eq.mockReturnThis();
-      supabase.single.mockRejectedValueOnce(dbError);
+      supabase.__setThrow(dbError);
 
       await produtosController.buscarProdutoPorId(req, res, next);
 
