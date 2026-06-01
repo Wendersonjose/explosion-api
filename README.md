@@ -6,6 +6,7 @@
 [![Express](https://img.shields.io/badge/Express-v5.2-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![JWT](https://img.shields.io/badge/JWT-Authentication-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
+[![Swagger](https://img.shields.io/badge/Swagger-OpenAPI_3.0-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io/)
 [![Tests](https://img.shields.io/badge/Tests-48%2F71_Passing-yellow?style=for-the-badge&logo=jest&logoColor=white)](https://jestjs.io/)
 [![Coverage](https://img.shields.io/badge/Coverage-59.73%25-orange?style=for-the-badge&logo=jest&logoColor=white)](https://jestjs.io/)
 [![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)](https://github.com)
@@ -27,7 +28,8 @@ A **Explosion API** é o backend robusto do e-commerce Explosion, especializado 
 
 - 🔐 **Autenticação JWT** completa com hash bcrypt
 - 🛡️ **Controle de acesso** por perfil de usuário
-- 🗃️ **PostgreSQL via Supabase** com queries otimizadas
+- � **Documentação Swagger** interativa com OpenAPI 3.0
+- �🗃️ **PostgreSQL via Supabase** com queries otimizadas
 - 🔄 **Relacionamentos complexos** entre tabelas
 - ⚠️ **Tratamento centralizado de erros**
 - 📝 **Logs estruturados** de operações
@@ -186,6 +188,7 @@ explosion-api/
 | **[Supabase](https://supabase.com/)** | 2.106.1 | BaaS com PostgreSQL |
 | **[JWT](https://jwt.io/)** | 9.0.3 | Autenticação stateless |
 | **[bcryptjs](https://www.npmjs.com/package/bcryptjs)** | 3.0.3 | Hash de senhas |
+| **[Swagger UI](https://swagger.io/)** | 5.18.2 | Documentação interativa OpenAPI 3.0 |
 | **[Jest](https://jestjs.io/)** | 29.7.0 | Framework de testes |
 | **[Supertest](https://www.npmjs.com/package/supertest)** | 7.0.0 | Testes HTTP/REST |
 | **[CORS](https://www.npmjs.com/package/cors)** | 2.8.6 | Cross-Origin Resource Sharing |
@@ -299,7 +302,28 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 openssl rand -hex 64
 ```
 
-## � Documentação da API
+## 📖 Documentação da API
+
+### 📚 Swagger UI
+
+A API possui documentação interativa completa com **Swagger UI**. Após iniciar o servidor, acesse:
+
+```
+http://localhost:3000/api-docs
+```
+
+**Recursos do Swagger:**
+- 🎯 Interface interativa para testar todos os endpoints
+- 📋 Documentação completa de schemas e modelos
+- 🔐 Suporte para autenticação JWT (clique em "Authorize")
+- 📥 Especificação OpenAPI 3.0 em JSON: http://localhost:3000/api-docs.json
+
+**Como usar:**
+1. Acesse http://localhost:3000/api-docs
+2. Para endpoints protegidos, clique no botão **"Authorize"** 🔒
+3. Insira o token JWT no formato: `Bearer seu_token_aqui`
+4. Clique em **"Authorize"** e depois **"Close"**
+5. Agora você pode testar os endpoints protegidos diretamente na interface
 
 ### Base URL
 
