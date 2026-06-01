@@ -2,7 +2,7 @@
 require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
-
+const { swaggerUi, swaggerSpec } = require('./config/swagger')
 
 const clientesRoutes = require('./routes/clientes.routes')
 const produtosRoutes = require('./routes/produtos.routes')
@@ -22,6 +22,18 @@ app.get('/', (req, res) => {
   res.json({ 
     message: 'API Explosion rodando' 
   })
+})
+
+// Documentação Swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Explosion API Docs'
+}))
+
+// Rota para acessar a especificação OpenAPI em JSON
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json')
+  res.send(swaggerSpec)
 })
 
 // Rotas da API
