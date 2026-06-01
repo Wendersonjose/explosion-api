@@ -9,6 +9,7 @@ const {
   criarItemCarrinho,
   buscarItemCarrinhoPorId,
   removerItemCarrinhoPorId,
+  buscarCarrinhoAtivoComItens,
 } = require("../services/carrinho.service");
 
 // Função para obter o carrinho do usuário autenticado
@@ -16,32 +17,9 @@ const obterCarrinho = async (req, res, next) => {
   try {
     const id_usuario = req.usuario.id;
 
-    const { data: carrinho, error } = await supabase
-      .from("carrinhos")
-      .select(
-        `
-        id_carrinho,
-        status,
-        criado_em,
-        atualizado_em,
-        itens_carrinho (
-          id_item_carrinho,
-          id_produto,
-          quantidade,
-          preco_unitario,
-          produtos (
-            nome_produto,
-            descricao,
-            imagem_url
-          )
-        )
-      `,
-      )
-      .eq("id_usuario", id_usuario)
-      .eq("status", "ativo")
-      .single();
+    const carrinho = await buscarCarrinhoAtivoComItens(id_usuario);
 
-    if (error || !carrinho) {
+    if (!carrinho) {
       return res.status(200).json({
         success: true,
         message: "Carrinho vazio",
