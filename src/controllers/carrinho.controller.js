@@ -1,8 +1,15 @@
 const supabase = require('../config/supabase')
 
+const {
+  buscarCarrinhoAtivo,
+  criarCarrinho,
+  buscarProdutoPorId,
+  buscarItensCarrinho,
+  atualizarQuantidadeItem,
+  criarItemCarrinho
+} = require('../services/carrinho.service')
 
 // Função para obter o carrinho do usuário autenticado
-
 const obterCarrinho = async (req, res, next) => {
   try {
     const id_usuario = req.usuario.id
@@ -59,7 +66,6 @@ const obterCarrinho = async (req, res, next) => {
 }
 
 // Função para adicionar um item ao carrinho
-
 const adicionarItemCarrinho = async (req, res, next) => {
   try {
     const { id_produto, quantidade } = req.body
@@ -79,46 +85,15 @@ const adicionarItemCarrinho = async (req, res, next) => {
       })
     }
 
-    let { data: carrinho } = await supabase
-      .from('carrinhos')
-      .select('*')
-      .eq('id_usuario', id_usuario)
-      .eq('status', 'ativo')
-      .single()
+    let carrinho = await buscarCarrinhoAtivo(id_usuario)
 
     if (!carrinho) {
-      const { data: novoCarrinho, error: erroCarrinho } = await supabase
-        .from('carrinhos')
-        .insert([
-          {
-            id_usuario
-          }
-        ])
-        .select()
-        .single()
-
-      if (erroCarrinho) {
-        throw erroCarrinho
-      }
-
-      carrinho = novoCarrinho
+      carrinho = await criarCarrinho(id_usuario)
     }
 
-    const { data: produto, error: erroProduto } = await supabase
-      .from('produtos')
-      .select(`
-        id_produto,
-        nome_produto,
-        estoque,
-        ativo,
-        precos_varejo (
-          preco_varejo_unitario
-        )
-      `)
-      .eq('id_produto', id_produto)
-      .single()
+    const produto = await buscarProdutoPorId(id_produto)
 
-    if (erroProduto || !produto) {
+    if (!produto) {
       return res.status(404).json({
         success: false,
         message: 'Produto não encontrado'
@@ -139,20 +114,15 @@ const adicionarItemCarrinho = async (req, res, next) => {
       })
     }
 
-  
-    const precoUnitario =
-      produto.precos_varejo.preco_varejo_unitario
+    const precoUnitario = produto.precos_varejo.preco_varejo_unitario
 
-    const { data: itemExistente } = await supabase
-      .from('itens_carrinho')
-      .select('*')
-      .eq('id_carrinho', carrinho.id_carrinho)
-      .eq('id_produto', id_produto)
-      .single()
+    const itemExistente = await buscarItensCarrinho(
+      carrinho.id_carrinho,
+      id_produto
+    )
 
     if (itemExistente) {
-      const novaQuantidade =
-        itemExistente.quantidade + quantidade
+      const novaQuantidade = itemExistente.quantidade + quantidade
 
       if (produto.estoque < novaQuantidade) {
         return res.status(400).json({
@@ -161,25 +131,11 @@ const adicionarItemCarrinho = async (req, res, next) => {
         })
       }
 
-      const {
-        data: itemAtualizado,
-        error: erroAtualizar
-      } = await supabase
-        .from('itens_carrinho')
-        .update({
-          quantidade: novaQuantidade,
-          preco_unitario: precoUnitario
-        })
-        .eq(
-          'id_item_carrinho',
-          itemExistente.id_item_carrinho
-        )
-        .select()
-        .single()
-
-      if (erroAtualizar) {
-        throw erroAtualizar
-      }
+      const itemAtualizado = await atualizarQuantidadeItem(
+        itemExistente.id_item_carrinho,
+        novaQuantidade,
+        precoUnitario
+      )
 
       return res.status(200).json({
         success: true,
@@ -188,22 +144,12 @@ const adicionarItemCarrinho = async (req, res, next) => {
       })
     }
 
-    const { data: itemCarrinho, error: erroItem } = await supabase
-      .from('itens_carrinho')
-      .insert([
-        {
-          id_carrinho: carrinho.id_carrinho,
-          id_produto,
-          quantidade,
-          preco_unitario: precoUnitario
-        }
-      ])
-      .select()
-      .single()
-
-    if (erroItem) {
-      throw erroItem
-    }
+    const itemCarrinho = await criarItemCarrinho(
+      carrinho.id_carrinho,
+      id_produto,
+      quantidade,
+      precoUnitario
+    )
 
     return res.status(201).json({
       success: true,
@@ -216,18 +162,12 @@ const adicionarItemCarrinho = async (req, res, next) => {
 }
 
 // Função para remover um item do carrinho
-
 const removerItemCarrinho = async (req, res, next) => {
   try {
     const { id_item_carrinho } = req.params
     const id_usuario = req.usuario.id
 
-    const { data: carrinho } = await supabase
-      .from('carrinhos')
-      .select('id_carrinho')
-      .eq('id_usuario', id_usuario)
-      .eq('status', 'ativo')
-      .single()
+    const carrinho = await buscarCarrinhoAtivo(id_usuario)
 
     if (!carrinho) {
       return res.status(404).json({
