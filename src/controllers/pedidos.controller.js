@@ -1,150 +1,137 @@
-const supabase = require("../config/supabase");
-
 const {
   buscarCarrinhoAtivoUsuario,
   buscarItensCarrinho,
-  criarPedidoRegistro,
-  criarItensPedido,
-  criarPagamento,
-} = require("../services/pedidos.service");
+  buscarPedidosUsuario,
+  buscarPedidoPorId,
+  atualizarStatusPedido,
+  processarPedidoCompleto,
+} = require('../services/pedidos.service')
+
+const FORMAS_PAGAMENTO_PERMITIDAS = ['pix', 'cartao_credito', 'cartao_debito', 'boleto']
 
 // Criar pedido
 const criarPedido = async (req, res, next) => {
   try {
-    const idUsuario = req.usuario.id;
-    const { id_endereco, forma_pagamento } = req.body;
+    const id_usuario = req.usuario.id
+    const { id_endereco, forma_pagamento } = req.body
 
     if (!id_endereco || !forma_pagamento) {
       return res.status(400).json({
         success: false,
-        message: "id_endereco e forma_pagamento são obrigatórios",
-      });
+        message: 'id_endereco e forma_pagamento são obrigatórios',
+      })
     }
 
-    // Verificar se o usuário tem um carrinho ativo
+    if (!FORMAS_PAGAMENTO_PERMITIDAS.includes(forma_pagamento)) {
+      return res.status(400).json({
+        success: false,
+        message: `Forma de pagamento inválida. Permitidas: ${FORMAS_PAGAMENTO_PERMITIDAS.join(', ')}`,
+      })
+    }
 
-    const carrinho = await buscarCarrinhoAtivoUsuario(idUsuario);
+    const carrinho = await buscarCarrinhoAtivoUsuario(id_usuario)
 
     if (!carrinho) {
       return res.status(404).json({
         success: false,
-        message: "Carrinho ativo não encontrado",
-      });
+        message: 'Carrinho ativo não encontrado',
+      })
     }
 
-    // Buscar itens do carrinho
-    const itensCarrinho = await buscarItensCarrinho(carrinho.id_carrinho);
+    const itensCarrinho = await buscarItensCarrinho(carrinho.id_carrinho)
 
     if (!itensCarrinho || itensCarrinho.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Carrinho vazio",
-      });
+        message: 'Carrinho vazio',
+      })
     }
 
-    // Calcular valor total do pedido
-    const valorTotal = itensCarrinho.reduce((total, item) => {
-      return total + Number(item.preco_unitario) * item.quantidade;
-    }, 0);
-
-    // Criar registro do pedido
-
-    const pedido = await criarPedidoRegistro(
-      idUsuario,
+    const { pedido, pagamento } = await processarPedidoCompleto({
+      id_usuario,
       id_endereco,
-      valorTotal,
-    );
-
-    // Criar itens do pedido
-    const itensPedido = itensCarrinho.map((item) => ({
-      id_pedido: pedido.id_pedido,
-      id_produto: item.id_produto,
-      quantidade: item.quantidade,
-      preco_unitario: item.preco_unitario,
-      subtotal: Number(item.preco_unitario) * item.quantidade,
-    }));
-
-    await criarItensPedido(itensPedido);
-
-    const pagamento = await criarPagamento(
-      pedido.id_pedido,
       forma_pagamento,
-      valorTotal,
-    );
-
-    for (const item of itensCarrinho) {
-      const { data: produto, error: erroProduto } = await supabase
-        .from("produtos")
-        .select("estoque")
-        .eq("id_produto", item.id_produto)
-        .single();
-
-      if (erroProduto) throw erroProduto;
-
-      const novoEstoque = produto.estoque - item.quantidade;
-
-      const { error: erroAtualizacao } = await supabase
-        .from("produtos")
-        .update({ estoque: novoEstoque })
-        .eq("id_produto", item.id_produto);
-
-      if (erroAtualizacao) throw erroAtualizacao;
-    }
-
-    const { error: erroRemoverItens } = await supabase
-      .from("itens_carrinho")
-      .delete()
-      .eq("id_carrinho", carrinho.id_carrinho);
-
-    if (erroRemoverItens) throw erroRemoverItens;
-
-    const { error: erroCarrinhoAtualizado } = await supabase
-      .from("carrinhos")
-      .update({ status: "finalizado" })
-      .eq("id_carrinho", carrinho.id_carrinho);
-
-    if (erroCarrinhoAtualizado) throw erroCarrinhoAtualizado;
+      itensCarrinho,
+      id_carrinho: carrinho.id_carrinho,
+    })
 
     return res.status(201).json({
       success: true,
-      message: "Pedido criado com sucesso",
-      data: {
-        pedido,
-        pagamento,
-      },
-    });
+      message: 'Pedido criado com sucesso',
+      data: { pedido, pagamento },
+    })
   } catch (error) {
-    next(error);
+    next(error)
   }
-};
+}
 
 // Listar meus pedidos
 const listarMeusPedidos = async (req, res, next) => {
   try {
+    const id_usuario = req.usuario.id
+
+    const pedidos = await buscarPedidosUsuario(id_usuario)
+
+    return res.status(200).json({
+      success: true,
+      data: pedidos,
+    })
   } catch (error) {
-    next(error);
+    next(error)
   }
-};
+}
 
 // Buscar pedido por ID
-const buscarPedidoPorId = async (req, res, next) => {
+const buscarPedidoPorIdController = async (req, res, next) => {
   try {
+    const { id } = req.params
+
+    const pedido = await buscarPedidoPorId(id)
+
+    if (!pedido) {
+      return res.status(404).json({
+        success: false,
+        message: 'Pedido não encontrado',
+      })
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: pedido,
+    })
   } catch (error) {
-    next(error);
+    next(error)
   }
-};
+}
 
 // Atualizar status do pedido
-const atualizarStatusPedido = async (req, res, next) => {
+const atualizarStatusPedidoController = async (req, res, next) => {
   try {
+    const { id } = req.params
+    const { status } = req.body
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        message: 'O campo status é obrigatório',
+      })
+    }
+
+    const pedido = await atualizarStatusPedido(id, status)
+
+    return res.status(200).json({
+      success: true,
+      message: 'Status atualizado com sucesso',
+      data: pedido,
+    })
   } catch (error) {
-    next(error);
+    next(error)
   }
-};
+}
 
 module.exports = {
   criarPedido,
   listarMeusPedidos,
-  buscarPedidoPorId,
-  atualizarStatusPedido,
-};
+  buscarPedidoPorId: buscarPedidoPorIdController,
+  atualizarStatusPedido: atualizarStatusPedidoController,
+}
